@@ -14,7 +14,7 @@ public class DatabaseSmokeTests
             .Options;
 
         // Ensure database can be created and a record can be added
-        using (var context = new EVoteDbContext(options))
+        using (var context = new EVoteDbContext())
         {
             context.Database.EnsureCreated();
             var user = new User { Email = "healthcheck@example.com" };
@@ -23,7 +23,7 @@ public class DatabaseSmokeTests
         }
 
         // Ensure the record can be retrieved
-        using (var context = new EVoteDbContext(options))
+        using (var context = new EVoteDbContext())
         {
             var user = context.Users.FirstOrDefault(u => u.Email == "healthcheck@example.com");
             Assert.NotNull(user);
@@ -46,7 +46,7 @@ public class DatabaseSmokeTests
             .Options;
 
         // Add a user
-        using (var context = new EVoteDbContext(options))
+        using (var context = new EVoteDbContext())
         {
             var user = new User { Email = "test@example.com" };
             context.Users.Add(user);
@@ -54,7 +54,7 @@ public class DatabaseSmokeTests
         }
 
         // Retrieve the user
-        using (var context = new EVoteDbContext(options))
+        using (var context = new EVoteDbContext())
         {
             var user = context.Users.FirstOrDefault(u => u.Email == "test@example.com");
             Assert.NotNull(user);

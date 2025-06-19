@@ -1,5 +1,6 @@
 ﻿using eVote.src.Controller;
 using eVote.src.Models;
+using eVote.src.Repository;
 
 namespace eVote.src.Service
 {
@@ -10,22 +11,23 @@ namespace eVote.src.Service
 
             Dictionary<UserId, int> candidateVotes = new Dictionary<UserId, int>();
 
-            var votes = EVoteController.GetAllVotes();
-            foreach (var vote in votes)
+            var votes = DbAccess.GetAllVotesAsync();
+            foreach (var vote in votes.Result)
             {
                 // The voted is a candidate
-                User candidate = EVoteController.GetUser(vote.CandidateId);
-                if (!candidate.IsCandidate)
+                User? candidate = DbAccess.GetUserAsync(vote.CandidateId).Result;
+                if (candidate == null || !candidate.IsCandidate)
                     continue;
 
                 // The voter is not a candidate
-                User voter = EVoteController.GetUser(vote.VoterId);
-                if (voter.IsCandidate)
+                User? voter = DbAccess.GetUserAsync(vote.VoterId).Result;
+                if (voter == null || voter.IsCandidate)
                     continue;
 
-                int voteCount = EVoteController.GetVotesOfUser(vote.VoterId).Count;
+                int voteCount = DbAccess.GetVotesOfUserAsync(vote.VoterId).Result.Count;
                 if (voteCount > 2)
-                    throw new InvalidOperationException("A user can only vote once.");
+                    continue;
+                    //throw new InvalidOperationException("A user can only vote once. All votes are invalidated");
 
                 //Add Counter
                 if (candidateVotes.ContainsKey(vote.CandidateId))
@@ -37,6 +39,7 @@ namespace eVote.src.Service
                     candidateVotes[vote.CandidateId] = 1;
                 }
             }
+
             // Count the number of votes for a specific candidate
             return candidateVotes;
         }
@@ -44,8 +47,8 @@ namespace eVote.src.Service
 
         public int CountCandidateVotes(UserId candidateId) {
 
-            User candidate = EVoteController.GetUser(candidateId);
-            if (!candidate.IsCandidate)
+            User? candidate = DbAccess.GetUserAsync(candidateId).Result;
+            if (candidate == null || !candidate.IsCandidate)
                 throw new ArgumentException("The user is not a candidate."); 
             
             Dictionary<UserId, int> candidateVotes = CountAllCandidateVotes();

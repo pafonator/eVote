@@ -13,7 +13,7 @@ public class VotingTests
             .UseSqlite("Data Source=evote.db")
             .Options;
 
-        using var context = new EVoteDbContext(options);
+        using var context = new EVoteDbContext();
         var user = new User { Email = "user1@example.com" };
         context.Users.Add(user);
         context.SaveChanges();

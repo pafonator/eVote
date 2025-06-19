@@ -9,13 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 // Register the DbContext with dependency injection
-builder.Services.AddDbContext<EVoteDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
-
-
-Console.WriteLine("banana");
+//builder.Services.AddDbContext<EVoteDbContext>(options =>
+//    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<EVoteDbContext>();
 
 
 var app = builder.Build();
