@@ -2,6 +2,7 @@ global using UserId = System.Guid;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace eVote.src.Models
 {
@@ -9,14 +10,16 @@ namespace eVote.src.Models
     {
         // Primary key (ensures a user is associated with an email)
         [Key]
-        public UserId Id = new UserId();
+        public UserId Id { get; set; } = new UserId();
         [Required]
-        public string Email { get; set; } = string.Empty; // Also acts as a unique identifier
-
-        public string Password { get; set; } = string.Empty;
+        [EmailAddress]
+        public required string Email { get; set; } // Also acts as a unique identifier
+        [Required]
+        public required string Password { get; set; }
         public bool IsCandidate { get; set; } = false;
     }
 
+    [PrimaryKey(nameof(VoterId), nameof(CandidateId))]
     public class Vote
     {
         public UserId VoterId { get; set; }

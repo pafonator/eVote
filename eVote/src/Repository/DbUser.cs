@@ -31,12 +31,12 @@ namespace eVote.src.Repository
             bool userExists = DbAccess.GetUserAsync(email).Result;
             if (!userExists)
             {
-                throw new InvalidOperationException("User does not exist.");
+                throw new InvalidOperationException("User does not exist");
             }
             User? user = DbAccess.GetUserAsync(email, password).Result;
             if (user == null)
             {
-                throw new InvalidOperationException("Incorrect password.");
+                throw new InvalidOperationException("Incorrect password");
             }
 
             // Acquire the lock for this user
@@ -45,7 +45,7 @@ namespace eVote.src.Repository
 
         public static async Task<DbUser> RegisterUserAsync(string email, string password)
         {
-            await using var db = new EVoteDbContext();
+            await using var db = EVoteDbContext.GetDb();
             // Check if the user already exists
             if (await db.Users.AnyAsync(u => u.Email == email))
             {
@@ -74,7 +74,7 @@ namespace eVote.src.Repository
         {
             _perUserLock.Wait(); 
 
-            await using var db = new EVoteDbContext();
+            await using var db = EVoteDbContext.GetDb();
             var user = await db.Users.FindAsync(userId);
 
             if (user == null)
@@ -94,7 +94,7 @@ namespace eVote.src.Repository
             _perUserLock.Wait();
             _voteCandidateLock.EnterWriteLock(); // Ensure no votes happen while unregistering
 
-            await using var db = new EVoteDbContext();
+            await using var db = EVoteDbContext.GetDb();
             var user = await db.Users.FindAsync(userId);
 
             if (user == null)
@@ -115,7 +115,7 @@ namespace eVote.src.Repository
             _perUserLock.Wait();
             _voteCandidateLock.EnterReadLock(); // Votes can happen in parallel
 
-            await using var db = new EVoteDbContext();
+            await using var db = EVoteDbContext.GetDb();
 
             var candidate = await db.Users.FindAsync(candidateId);
             if (candidate == null || !candidate.IsCandidate)
