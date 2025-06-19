@@ -1,25 +1,21 @@
-public class UserId
+namespace eVote.src.Models
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public string Email { get; set; }
-}
-
-public class User
-{
-    public string Email { get; set; } //Id
-    public bool IsCandidate { get; set; }
-    public Guid VoteGiven = new();
-    public List<Guid> VotesReceived { get; set; } = new();
-    public User(string email)
+    public class User
     {
-        Email = email;
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Email { get; set; } = string.Empty;
+        public bool IsCandidate { get; set; }
     }
-}
 
-public class Candidate : User
-{
-    public Candidate(string email) : base(email)
+    public class Voter : User
     {
-        IsCandidate = true;
+        public Guid userId { get; set; }
+        public Guid voteFor { get; set; }
+    }
+
+    public class Candidate : User
+    {
+        public uint voteCount { get; set; } = 0;
+
     }
 }
