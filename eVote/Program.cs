@@ -1,5 +1,6 @@
 using eVote.src.Repository;
 using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,8 @@ builder.Services.AddRazorPages();
 // Register the DbContext with dependency injection
 builder.Services.AddDbContext<EVoteDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 
 
 Console.WriteLine("banana");

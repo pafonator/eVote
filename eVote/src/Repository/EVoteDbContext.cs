@@ -7,13 +7,19 @@ namespace eVote.src.Repository
     {
         public EVoteDbContext(DbContextOptions<EVoteDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
-        // Add other DbSets as needed, e.g. Votes
+        public DbSet<User> Users => Set<User>();
+        public DbSet<Vote> Votes => Set<Vote>();
 
+        /*
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             // Configure entity relationships and constraints here if needed
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite("Data Source=evote.db");
+        }*/
     }
 }

@@ -10,7 +10,7 @@ public class VotingTests
     public void UserCannotVoteForSelf()
     {
         var options = new DbContextOptionsBuilder<EVoteDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDb")
+            .UseSqlite("Data Source=evote.db")
             .Options;
 
         using var context = new EVoteDbContext(options);
