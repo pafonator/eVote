@@ -20,24 +20,17 @@ namespace eVote.src.Repository
                 .ToListAsync();
         }
 
-        public static async Task<bool> GetUserAsync(string email)
-        {
-            await using var db = EVoteDbContext.GetDb();
-            return await db.Users.AnyAsync(u => u.Email == email);
-        }
-        public static async Task<User?> GetUserAsync(string email, string password)
+        public static async Task<User?> GetUserAsync(string email)
         {
             await using var db = EVoteDbContext.GetDb();
             return await db.Users
-                .Where(v => v.Email == email && v.Password == password)
-                .FirstAsync();
+                .FirstOrDefaultAsync(v => v.Email == email);
         }
 
         public static async Task<User?> GetUserAsync(UserId userId)
         {
             await using var db = EVoteDbContext.GetDb();
             return await db.Users
-                .Where(v => v.Id == userId)
                 .FirstOrDefaultAsync(u => u.Id == userId); //TODO
         }
 

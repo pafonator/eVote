@@ -10,8 +10,7 @@ namespace eVote.src.Repository
         private static readonly object _loginLockGuard = new(); // To protect dictionary access
 
         private SemaphoreSlim _perUserLock = new(1, 1); // Lock for voting operations
-        private UserId userId;
-
+        public UserId userId;
         private DbUser(UserId id)
         {
             lock (_loginLockGuard)
@@ -28,13 +27,13 @@ namespace eVote.src.Repository
 
         public static DbUser Login(string email, string password)
         {
-            bool userExists = DbAccess.GetUserAsync(email).Result;
-            if (!userExists)
+            // This code should be executed on the server side to ensure the user can t get the password
+            User? user = DbAccess.GetUserAsync(email).Result;
+            if (user == null)
             {
                 throw new InvalidOperationException("User does not exist");
             }
-            User? user = DbAccess.GetUserAsync(email, password).Result;
-            if (user == null)
+            else if (user.Password != password)
             {
                 throw new InvalidOperationException("Incorrect password");
             }
@@ -43,11 +42,11 @@ namespace eVote.src.Repository
             return new DbUser(user.Id);
         }
 
-        public static async Task<DbUser> RegisterUserAsync(string email, string password)
+        public static DbUser RegisterUser(string email, string password)
         {
-            await using var db = EVoteDbContext.GetDb();
+            using var db = EVoteDbContext.GetDb();
             // Check if the user already exists
-            if (await db.Users.AnyAsync(u => u.Email == email))
+            if (db.Users.Any(u => u.Email == email))
             {
                 throw new InvalidOperationException("User already exists with this email.");
             }
@@ -59,7 +58,7 @@ namespace eVote.src.Repository
             // Tries changes to the database
             try
             {
-                await db.SaveChangesAsync();
+                db.SaveChanges();
             }
             catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("UNIQUE constraint failed") == true)
             {
@@ -70,7 +69,7 @@ namespace eVote.src.Repository
             return new DbUser(user.Id);
         }
 
-        public async void RegisterAsCandidate()
+        public async Task RegisterAsCandidate()
         {
             _perUserLock.Wait(); 
 
@@ -88,8 +87,9 @@ namespace eVote.src.Repository
             _perUserLock.Release();
         }
 
+        // Multiple people can vote in parallel, but no one can vote while a candidate is unregistering
         private static readonly ReaderWriterLockSlim _voteCandidateLock = new ReaderWriterLockSlim();
-        public async void UnregisterAsCandidate()
+        public async Task UnregisterAsCandidate()
         {
             _perUserLock.Wait();
             _voteCandidateLock.EnterWriteLock(); // Ensure no votes happen while unregistering
@@ -110,12 +110,18 @@ namespace eVote.src.Repository
             _voteCandidateLock.ExitWriteLock(); // Release the lock after unregistering
             _perUserLock.Release();
         }
-        public async void VoteForCandidate(UserId candidateId)
+        public async Task VoteForCandidate(UserId candidateId)
         {
             _perUserLock.Wait();
             _voteCandidateLock.EnterReadLock(); // Votes can happen in parallel
 
             await using var db = EVoteDbContext.GetDb();
+
+            var user = await db.Users.FindAsync(userId);
+            if (user == null || user.IsCandidate)
+            {
+                throw new InvalidOperationException("Candidates cannot vote.");
+            }
 
             var candidate = await db.Users.FindAsync(candidateId);
             if (candidate == null || !candidate.IsCandidate)
