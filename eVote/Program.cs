@@ -8,29 +8,27 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-// Register the DbContext with dependency injection
-//builder.Services.AddDbContext<EVoteDbContext>(options =>
-//    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Register the DbContext
 builder.Services.AddDbContext<EVoteDbContext>();
+
+// Http client for API requests (sends request to the adress)
+builder.Services.AddHttpClient("eVoteAPI", client =>
+{
+    //TODO fix base adress hardcoded
+    client.BaseAddress = new Uri("https://localhost:7152/"); // Adjust the base address as needed
+});
+builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor(); // For accessing HttpContext in Razor Pages
 
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapRazorPages();
+app.MapControllers();
 
 app.Run();

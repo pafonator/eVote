@@ -1,0 +1,33 @@
+﻿@page  
+@model LoginModel  
+@{  
+   ViewData["Title"] = "Login";  
+}  
+<h2>Login</h2>  
+
+<form method="post">  
+   <div style="display: flex; flex-direction: column; max-width: 300px;">  
+       <div style="margin-bottom: 10px;">  
+           <label style="display: block;">Email:</label>  
+           <input asp-for="Email" style="width: 100%;" />  
+       </div>  
+       <div style="margin-bottom: 10px;">  
+           <label style="display: block;">Password:</label>  
+           <input asp-for="Password" type="password" style="width: 100%;" />  
+       </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" name="action" value="login" style="flex: 1;">Login</button>
+            <button type="submit" name="action" value="register" style="flex: 1;">Register</button>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" name="action" value="test" style="flex: 1;">TestButton</button>
+        </div>
+
+   </div>  
+</form>  
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))  
+{  
+   <p style="color:red">@Model.ErrorMessage</p>  
+}
