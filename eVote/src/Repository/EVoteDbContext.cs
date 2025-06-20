@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using eVote.src.Models;
+using eVote.src.Model;
 using Microsoft.Extensions.Options;
 
 namespace eVote.src.Repository

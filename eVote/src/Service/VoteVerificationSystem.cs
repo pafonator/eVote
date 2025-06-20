@@ -1,5 +1,5 @@
 ﻿using eVote.src.Controller;
-using eVote.src.Models;
+using eVote.src.Model;
 using eVote.src.Repository;
 
 namespace eVote.src.Service
@@ -11,20 +11,20 @@ namespace eVote.src.Service
 
             Dictionary<UserId, int> candidateVotes = new Dictionary<UserId, int>();
 
-            var votes = DbAccess.GetAllVotesAsync();
+            var votes = DbRead.GetAllVotesAsync();
             foreach (var vote in votes.Result)
             {
                 // The voted is a candidate
-                User? candidate = DbAccess.GetUserAsync(vote.CandidateId).Result;
+                User? candidate = DbRead.GetUserAsync(vote.CandidateId).Result;
                 if (candidate == null || !candidate.IsCandidate)
                     continue;
 
                 // The voter is not a candidate
-                User? voter = DbAccess.GetUserAsync(vote.VoterId).Result;
+                User? voter = DbRead.GetUserAsync(vote.VoterId).Result;
                 if (voter == null || voter.IsCandidate)
                     continue;
 
-                int voteCount = DbAccess.GetVotesOfUserAsync(vote.VoterId).Result.Count;
+                int voteCount = DbRead.GetVotesOfUserAsync(vote.VoterId).Result.Count;
                 if (voteCount > 2)
                     continue;
                     //throw new InvalidOperationException("A user can only vote once. All votes are invalidated");
@@ -47,7 +47,7 @@ namespace eVote.src.Service
 
         public int CountCandidateVotes(UserId candidateId) {
 
-            User? candidate = DbAccess.GetUserAsync(candidateId).Result;
+            User? candidate = DbRead.GetUserAsync(candidateId).Result;
             if (candidate == null || !candidate.IsCandidate)
                 throw new ArgumentException("The user is not a candidate."); 
             

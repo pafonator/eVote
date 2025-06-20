@@ -1,5 +1,6 @@
 using System.Net.Http;
 using eVote.src.Controller;
+using eVote.src.Model.DTO;
 using eVote.src.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -31,36 +32,33 @@ namespace eVote.Pages
         {
             if (action == "login")
             {
-                Console.WriteLine($"Login: {Email} {Password}");
-                // Handle login
-                //var user = DbAccess.GetUserAsync(Email).Result;
-                //if (user == null || user.Password != Password)
-                //{
-                //    ErrorMessage = "Invalid email or password.";
-                //    return Page();
-                //}
-
-                // You could set session/cookie info here
-
-                //return RedirectToPage("/Index"); // Or your protected page
-            }
-            else if (action == "register")
-            {
-                Console.WriteLine($"Register: {Email} {Password}");
-                // Redirect to registration page
-                //return RedirectToPage("/Register");
-            }
-            else if (action == "test")
-            {
-                var response = await _httpClient.GetAsync("api/evote/test");
+                var input = JsonContent.Create(new UserCredentials { Email = Email, Password = Password });
+                var response = await _httpClient.PostAsync("api/evote/user/login", input);
                 if (response.IsSuccessStatusCode)
                 {
-                    string message = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Response: {message}");
+                    return RedirectToPage("/Index");
                 }
                 else
                 {
-                    ErrorMessage = "API call failed.";
+                    string message = await response.Content.ReadAsStringAsync();
+                    ErrorMessage = message;
+                    _logger.LogError($"Login failed: {message}");
+                }
+            }
+            else if (action == "register")
+            {
+                var input = JsonContent.Create(new UserCredentials{ Email = Email, Password = Password});
+                var response = await _httpClient.PostAsync("api/evote/user/register", input);
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Register: {Email} {Password}");
+                    return RedirectToPage("/Index");
+                }
+                else
+                {
+                    string message = await response.Content.ReadAsStringAsync();
+                    ErrorMessage = message;
+                    _logger.LogError($"Registration failed: {message}");
                 }
             }
 

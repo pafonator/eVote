@@ -1,9 +1,9 @@
 ﻿@page  
 @model LoginModel  
 @{  
-   ViewData["Title"] = "Login";  
+   ViewData["Title"] = "Login/Register";  
 }  
-<h2>Login</h2>  
+<h2>Account</h2>  
 
 <form method="post">  
    <div style="display: flex; flex-direction: column; max-width: 300px;">  
@@ -20,10 +20,6 @@
             <button type="submit" name="action" value="login" style="flex: 1;">Login</button>
             <button type="submit" name="action" value="register" style="flex: 1;">Register</button>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button type="submit" name="action" value="test" style="flex: 1;">TestButton</button>
-        </div>
-
    </div>  
 </form>  
 

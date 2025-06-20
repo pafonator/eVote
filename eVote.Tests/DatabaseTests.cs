@@ -1,7 +1,7 @@
 using Xunit;
 using Xunit;
 using Microsoft.EntityFrameworkCore;
-using eVote.src.Models;
+using eVote.src.Model;
 using eVote.src.Repository;
 
 public class DatabaseTests
@@ -118,28 +118,28 @@ public class DatabaseTests
     [Fact]
     public void RegisterLoginTest()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => DbUser.Login("John@gmail.com", "1"));
+        var ex = Assert.Throws<InvalidOperationException>(() => DbUserActions.Login("John@gmail.com", "1"));
         Assert.Equal("User does not exist", ex.Message);
 
-        DbUser dbUser = DbUser.RegisterUser("John@gmail.com", "1");
+        DbUserActions dbUser = DbUserActions.RegisterUser("John@gmail.com", "1");
         Assert.NotNull(dbUser);
 
-        Assert.Throws<InvalidOperationException>(() => DbUser.RegisterUser("John@gmail.com", "1"));
+        Assert.Throws<InvalidOperationException>(() => DbUserActions.RegisterUser("John@gmail.com", "1"));
 
-        ex = Assert.Throws<InvalidOperationException>(() => DbUser.Login("John@gmail.com", "WrongPassword"));
+        ex = Assert.Throws<InvalidOperationException>(() => DbUserActions.Login("John@gmail.com", "WrongPassword"));
         Assert.Equal("Incorrect password", ex.Message);
 
-        dbUser = DbUser.Login("John@gmail.com", "1");
+        dbUser = DbUserActions.Login("John@gmail.com", "1");
         Assert.NotNull(dbUser);
     }
 
     [Fact]
     public async Task CandidateVoteTest()
     {
-        DbUser dbUserKale = DbUser.RegisterUser("Kale@gmail.com", "1");
-        DbUser dbUserAmi = DbUser.RegisterUser("Ami@gmail.com", "1");
-        DbUser dbUserBob = DbUser.RegisterUser("Bob@gmail.com", "1");
-        DbUser dbUserCal = DbUser.RegisterUser("Cal@gmail.com", "1");
+        DbUserActions dbUserKale = DbUserActions.RegisterUser("Kale@gmail.com", "1");
+        DbUserActions dbUserAmi = DbUserActions.RegisterUser("Ami@gmail.com", "1");
+        DbUserActions dbUserBob = DbUserActions.RegisterUser("Bob@gmail.com", "1");
+        DbUserActions dbUserCal = DbUserActions.RegisterUser("Cal@gmail.com", "1");
         Assert.NotNull(dbUserKale);
         Assert.NotNull(dbUserAmi);
         Assert.NotNull(dbUserBob);

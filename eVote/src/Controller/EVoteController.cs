@@ -1,5 +1,5 @@
-﻿using eVote.src.DTO;
-using eVote.src.Models;
+﻿using System.Text.Json;
+using eVote.src.Model.DTO;
 using eVote.src.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,8 +16,8 @@ namespace eVote.src.Controller
             return Ok("Hello from the API");
         }
 
-        [HttpGet]
-        public async Task<List<UserWithVotesDto>> GetUsersWithVotesAsync()
+        [HttpGet("table")]
+        public async Task<List<TableRow>> GetUsersWithVotesAsync()
         {
             await using var db = EVoteDbContext.GetDb();
 
@@ -27,7 +27,7 @@ namespace eVote.src.Controller
                 .ToDictionaryAsync(g => g.CandidateId, g => g.Count);
 
             return await db.Users
-                .Select(u => new UserWithVotesDto
+                .Select(u => new TableRow
                 {
                     Id = u.Id,
                     Email = u.Email,
@@ -38,12 +38,36 @@ namespace eVote.src.Controller
         }
 
 
-
-        [HttpPost("vote")]
-        public async Task<IActionResult> VoteAsync(UserId userId)
+        [HttpPost("user/register")]
+        public async Task<IActionResult> Register([FromBody] UserCredentials content)
         {
-            //TODO
-            return Ok(userId);
+            try
+            {
+                //TODO store user
+                var user = DbUserActions.RegisterUser(content.Email, content.Password);
+                return Ok(user);
+
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpPost("user/login")]
+        public async Task<IActionResult> Login([FromBody] UserCredentials content)
+        {
+            try
+            {
+                //TODO store user
+                var user = DbUserActions.Login(content.Email, content.Password);
+                return Ok(user);
+
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
     }
 }

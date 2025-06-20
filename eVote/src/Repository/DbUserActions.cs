@@ -1,9 +1,9 @@
-﻿using eVote.src.Models;
+﻿using eVote.src.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace eVote.src.Repository
 {
-    public class DbUser
+    public class DbUserActions
     {
         private static readonly Dictionary<UserId, ReaderWriterLockSlim> _userLocks = new();
         private static readonly ReaderWriterLockSlim _userLocksGuard = new();
@@ -39,24 +39,24 @@ namespace eVote.src.Repository
             }
         }
 
-        private DbUser(UserId id)
+        private DbUserActions(UserId id)
         {
             userId = id;
             _currentUserLock = GetUserLock(id);
         }
 
-        public static DbUser Login(string email, string password)
+        public static DbUserActions Login(string email, string password)
         {
-            var user = DbAccess.GetUserAsync(email).Result;
+            var user = DbRead.GetUserAsync(email).Result;
             if (user == null)
                 throw new InvalidOperationException("User does not exist");
             if (user.Password != password)
                 throw new InvalidOperationException("Incorrect password");
 
-            return new DbUser(user.Id);
+            return new DbUserActions(user.Id);
         }
 
-        public static DbUser RegisterUser(string email, string password)
+        public static DbUserActions RegisterUser(string email, string password)
         {
             using var db = EVoteDbContext.GetDb();
             if (db.Users.Any(u => u.Email == email))
@@ -74,7 +74,7 @@ namespace eVote.src.Repository
                 throw new InvalidOperationException("User already exists with this email.");
             }
 
-            return new DbUser(user.Id);
+            return new DbUserActions(user.Id);
         }
 
         public async Task RegisterAsCandidate()
@@ -136,7 +136,7 @@ namespace eVote.src.Repository
                 if (user == null || user.IsCandidate)
                     throw new InvalidOperationException("Candidates cannot vote.");
 
-                var votes = await DbAccess.GetVotesOfUserAsync(userId);
+                var votes = await DbRead.GetVotesOfUserAsync(userId);
                 if (votes.Count >= 2)
                     throw new InvalidOperationException("A user can only vote twice, unselect a vote to change it.");
 

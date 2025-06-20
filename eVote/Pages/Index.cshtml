@@ -1,10 +1,39 @@
 ﻿@page
-@model IndexModel
+@model Index
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Home";
 }
+<h1>@ViewData["Title"]</h1>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (Model.TableData == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Votes Received</th>
+                <th>Is Candidate</th>
+                <th>Vote</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.TableData)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.VoteCount</td>
+                    <td>@user.IsCandidate</td>
+                    <td>
+                        <input type="checkbox"
+                               disabled="@(!user.IsCandidate)"
+                               checked="" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
