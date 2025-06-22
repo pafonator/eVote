@@ -1,7 +1,10 @@
 using System.Net.Http;
+using System.Security.Claims;
 using eVote.src.Controller;
 using eVote.src.Model.DTO;
 using eVote.src.Repository;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -24,44 +27,77 @@ namespace eVote.Pages
         [BindProperty]
         public string Password { get; set; }
 
+        public string CurrentUser { get; set; }
         public string ErrorMessage { get; set; }
 
-        public void OnGet() { }
+        public void OnGet() { 
+            //User.Identity.Id
+        }
 
-        public async Task<IActionResult> OnPostAsync(string action)
+        public async Task<IActionResult> OnPostLoginAsync(string action)
         {
-            if (action == "login")
+            var input = JsonContent.Create(new UserCredentials { Email = Email, Password = Password });
+            var response = await _httpClient.PostAsync("api/evote/user/login", input);
+            if (response.IsSuccessStatusCode)
             {
-                var input = JsonContent.Create(new UserCredentials { Email = Email, Password = Password });
-                var response = await _httpClient.PostAsync("api/evote/user/login", input);
-                if (response.IsSuccessStatusCode)
-                {
-                    return RedirectToPage("/Index");
-                }
-                else
-                {
-                    string message = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = message;
-                    _logger.LogError($"Login failed: {message}");
-                }
-            }
-            else if (action == "register")
-            {
-                var input = JsonContent.Create(new UserCredentials{ Email = Email, Password = Password});
-                var response = await _httpClient.PostAsync("api/evote/user/register", input);
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"Register: {Email} {Password}");
-                    return RedirectToPage("/Index");
-                }
-                else
-                {
-                    string message = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = message;
-                    _logger.LogError($"Registration failed: {message}");
-                }
-            }
+                var tokenData = await response.Content.ReadFromJsonAsync<TokenAuthentication>();
 
+                // Store the token in a secure, HttpOnly cookie
+                Response.Cookies.Append("AuthToken", tokenData.Token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // only over HTTPS
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+
+                return RedirectToPage("/Index");
+            }
+            else
+            {
+                string message = await response.Content.ReadAsStringAsync();
+                ErrorMessage = message;
+                _logger.LogError($"Login failed: {message}");
+            }
+            return Page();
+        }
+        public async Task<IActionResult> OnPostRegisterAsync(string action)
+        {
+            var input = JsonContent.Create(new UserCredentials{ Email = Email, Password = Password});
+            var response = await _httpClient.PostAsync("api/evote/user/register", input);
+            if (response.IsSuccessStatusCode)
+            {
+                var tokenData = await response.Content.ReadFromJsonAsync<TokenAuthentication>();
+
+                // Store the token in a secure, HttpOnly cookie
+                Response.Cookies.Append("AuthToken", tokenData.Token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // only over HTTPS
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+
+                return RedirectToPage("/Index");
+            }
+            else
+            {
+                string message = await response.Content.ReadAsStringAsync();
+                ErrorMessage = message;
+                _logger.LogError($"Registration failed: {message}");
+            }
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostLogoutAsync(string action)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostTestAsync(string action)
+        {
+            var response = await _httpClient.GetAsync("api/evote/user/test");
             return Page();
         }
     }

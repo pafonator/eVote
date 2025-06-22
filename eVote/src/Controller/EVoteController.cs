@@ -1,8 +1,14 @@
-﻿using System.Text.Json;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 using eVote.src.Model.DTO;
 using eVote.src.Repository;
+using eVote.src.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace eVote.src.Controller
 {
@@ -10,6 +16,13 @@ namespace eVote.src.Controller
     [Route("api/[controller]")]
     public class EVoteController : ControllerBase
     {
+        private readonly JwtToken _jwtService;
+        public EVoteController(JwtToken jwtService)
+        {
+            _jwtService = jwtService;
+        }
+
+
         [HttpGet("test")]
         public IActionResult Test()
         {
@@ -43,10 +56,18 @@ namespace eVote.src.Controller
         {
             try
             {
-                //TODO store user
-                var user = DbUserActions.RegisterUser(content.Email, content.Password);
-                return Ok(user);
+                var user = DbUserActions.RegisterUser(content.Email, content.Password).Result;
+                if (user == null)
+                {
+                    return Problem("An unknown problem occured");
+                }
 
+                var token = _jwtService.GenerateToken(user.Id.ToString(), user.Email);
+
+                return Ok(new TokenAuthentication
+                {
+                    Token = token,
+                });
             }
             catch (Exception ex)
             {
@@ -59,15 +80,36 @@ namespace eVote.src.Controller
         {
             try
             {
-                //TODO store user
-                var user = DbUserActions.Login(content.Email, content.Password);
-                return Ok(user);
+                var user = DbUserActions.Login(content.Email, content.Password).Result;
+                if (user == null)
+                {
+                    return Problem("An unknown problem occured");
+                }
 
+                var token = _jwtService.GenerateToken(user.Id.ToString(), user.Email);
+
+                return Ok(new TokenAuthentication
+                {
+                    Token = token,
+                });
             }
             catch (Exception ex)
             {
                 return Problem(ex.Message);
             }
         }
+
+        [HttpGet("user/test")]
+        [Authorize]
+        public IActionResult GetCurrentUser()
+        {
+            var userId = User.FindFirst("Id")?.Value;
+            var email = User.FindFirst("Email")?.Value;
+
+            Console.WriteLine($"Current User: {userId}, Email: {email}");
+
+            return Ok();
+        }
+
     }
 }

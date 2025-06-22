@@ -8,9 +8,6 @@ namespace eVote.src.Repository
         private static readonly Dictionary<UserId, ReaderWriterLockSlim> _userLocks = new();
         private static readonly ReaderWriterLockSlim _userLocksGuard = new();
 
-        private ReaderWriterLockSlim _currentUserLock; // Lock for voting operations
-        public UserId userId;
-
         public static ReaderWriterLockSlim GetUserLock(UserId id)
         {
             _userLocksGuard.EnterUpgradeableReadLock();
@@ -39,26 +36,19 @@ namespace eVote.src.Repository
             }
         }
 
-        private DbUserActions(UserId id)
+        public static async Task<User?> Login(string email, string password)
         {
-            userId = id;
-            _currentUserLock = GetUserLock(id);
-        }
-
-        public static DbUserActions Login(string email, string password)
-        {
-            var user = DbRead.GetUserAsync(email).Result;
+            var user = await DbRead.GetUserAsync(email);
             if (user == null)
                 throw new InvalidOperationException("User does not exist");
             if (user.Password != password)
                 throw new InvalidOperationException("Incorrect password");
-
-            return new DbUserActions(user.Id);
+            return user;
         }
 
-        public static DbUserActions RegisterUser(string email, string password)
+        public static async Task<User?> RegisterUser(string email, string password)
         {
-            using var db = EVoteDbContext.GetDb();
+            await using var db = EVoteDbContext.GetDb();
             if (db.Users.Any(u => u.Email == email))
                 throw new InvalidOperationException("User already exists with this email.");
 
@@ -67,18 +57,18 @@ namespace eVote.src.Repository
 
             try
             {
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("UNIQUE constraint failed") == true)
             {
                 throw new InvalidOperationException("User already exists with this email.");
             }
-
-            return new DbUserActions(user.Id);
+            return user;
         }
 
-        public async Task RegisterAsCandidate()
+        public static async Task RegisterAsCandidate(UserId userId)
         {
+            var _currentUserLock = GetUserLock(userId);
             _currentUserLock.EnterWriteLock();
             try
             {
@@ -96,8 +86,9 @@ namespace eVote.src.Repository
             }
         }
 
-        public async Task UnregisterAsCandidate()
+        public static async Task UnregisterAsCandidate(UserId userId)
         {
+            var _currentUserLock = GetUserLock(userId);
             _currentUserLock.EnterWriteLock();
             try
             {
@@ -118,12 +109,14 @@ namespace eVote.src.Repository
             }
         }
 
-        public async Task VoteForCandidate(UserId candidateId)
+        public static async Task VoteForCandidate(UserId userId ,UserId candidateId)
         {
             if (candidateId == userId)
             {
                 throw new InvalidOperationException("Really... You just voted for yourself (-_-)");
             }
+
+            var _currentUserLock = GetUserLock(userId);
             var _candidateLock = GetUserLock(candidateId);
 
             _currentUserLock.EnterWriteLock();

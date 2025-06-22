@@ -5,6 +5,17 @@
 }  
 <h2>Account</h2>  
 
+@if (false)
+{
+    <div style="display: flex; flex-direction: column; max-width: 300px;">
+        <label style="display: block;">Logged in as : @Model.CurrentUser</label>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" name="action" value="login" style="flex: 1;">Login</button>
+            <button type="submit" name="action" value="register" style="flex: 1;">Register</button>
+        </div>
+    </div>
+}
+
 <form method="post">  
    <div style="display: flex; flex-direction: column; max-width: 300px;">  
        <div style="margin-bottom: 10px;">  
@@ -17,8 +28,11 @@
        </div>
 
         <div style="display: flex; gap: 10px;">
-            <button type="submit" name="action" value="login" style="flex: 1;">Login</button>
-            <button type="submit" name="action" value="register" style="flex: 1;">Register</button>
+            <button type="submit" name="action" asp-page-handler="Login" style="flex: 1;">Login</button>
+            <button type="submit" name="action" asp-page-handler="Register" style="flex: 1;">Register</button>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" name="action" asp-page-handler="Test" style="flex: 1;">Test</button>
         </div>
    </div>  
 </form>  

@@ -16,4 +16,9 @@ namespace eVote.src.Model.DTO
         public string Email { get; set; }
         public string Password { get; set; }
     }
+
+    public class TokenAuthentication
+    {
+        public string Token { get; set; } // The JWT itself
+    };
 }
