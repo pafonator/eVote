@@ -35,6 +35,9 @@ builder.Services.AddHttpClient("eVoteAPI", client =>
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor(); // For accessing HttpContext in Razor Pages
 
+
+// Authentication
+var secretKey = builder.Configuration["Jwt:Secret"];
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -45,7 +48,7 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSuperSecretKeyThatIsLongEnoughAndRandom")),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
@@ -55,8 +58,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Singletons
-builder.Services.AddSingleton<JwtToken>();
+builder.Services.AddSingleton(new JwtToken(secretKey));
 
 // Service to access curent user information
 builder.Services.AddScoped<CurrentUserService>();

@@ -9,11 +9,15 @@ namespace eVote.src.Service
 {
     public class JwtToken
     {
+        private readonly string _secret;
+        public JwtToken(string secret)
+        {
+            _secret = secret;
+        }
         public string GenerateToken(string userId, string email)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            //TODO store secret key in a global var accessible only server side
-            var key = Encoding.ASCII.GetBytes("YourSuperSecretKeyThatIsLongEnoughAndRandom");
+            var key = Encoding.ASCII.GetBytes(_secret);
 
             var claims = new List<Claim>
             {
@@ -36,7 +40,7 @@ namespace eVote.src.Service
         public ClaimsPrincipal ValidateToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("YourSuperSecretKeyThatIsLongEnoughAndRandom");
+            var key = Encoding.ASCII.GetBytes(_secret);
 
             try
             {
