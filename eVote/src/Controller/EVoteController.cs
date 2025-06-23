@@ -50,6 +50,15 @@ namespace eVote.src.Controller
             });
         }
 
+        [HttpGet("user/votes")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUserVotes()
+        {
+            UserId userId = UserId.Parse(User.FindFirst("Id")?.Value);
+            var votes = await DbRead.GetVotesOfUserAsync(userId);
+            return Ok(votes);
+        }
+
         [HttpPost("user/register")]
         public async Task<IActionResult> Register([FromBody] UserCredentials content)
         {

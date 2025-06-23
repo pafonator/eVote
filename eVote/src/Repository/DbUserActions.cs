@@ -17,7 +17,7 @@ namespace eVote.src.Repository
                 if (!_userLocks.TryGetValue(id, out var userLock))
                 {
                     // If not, create a new lock
-                    _userLocksGuard.EnterWriteLock();
+                    _userLocksGuard.EnterWriteLock(); //TODO case when another thread is waiting for the lock
                     try
                     {
                         userLock = new ReaderWriterLockSlim();
@@ -175,7 +175,7 @@ namespace eVote.src.Repository
             {
                 await using var db = EVoteDbContext.GetDb();
 
-                var vote = await db.Votes.FindAsync(new { VoterId = userId, CandidateId = candidateId });
+                var vote = await db.Votes.FirstAsync(v => v.VoterId == userId && v.CandidateId == candidateId);
                 if (vote == null)
                 {
                     throw new InvalidOperationException("No vote found for this user and candidate.");

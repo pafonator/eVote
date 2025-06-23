@@ -7,7 +7,7 @@ using eVote.src.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using eVote.src.Controller.ClientSide;
+using eVote.src.ClientSide;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +20,7 @@ builder.Services.AddDbContext<EVoteDbContext>();
 
 // Used to handle authentication for all API requests
 builder.Services.AddTransient<ClientApiHandler>();
+
 
 // Http client for API requests (sends request to the adress)
 builder.Services.AddHttpClient("eVoteAPI", client =>
@@ -54,6 +55,9 @@ builder.Services.AddAuthorization();
 
 // Singletons
 builder.Services.AddSingleton<JwtToken>();
+
+// Service to access curent user information
+builder.Services.AddScoped<CurrentUserService>();
 
 
 var app = builder.Build();

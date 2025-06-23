@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Headers;
 
-namespace eVote.src.Controller.ClientSide
+namespace eVote.src.ClientSide
 {
     public class ClientApiHandler : DelegatingHandler
     {
