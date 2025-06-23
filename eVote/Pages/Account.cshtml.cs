@@ -1,5 +1,5 @@
 using Azure;
-using eVote.src.ClientSide;
+using eVote.src.Client;
 using eVote.src.Model.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

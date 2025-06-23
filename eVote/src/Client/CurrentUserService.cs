@@ -1,7 +1,7 @@
 ﻿using eVote.Pages;
 using eVote.src.Model.DTO;
 
-namespace eVote.src.ClientSide
+namespace eVote.src.Client
 {
     public class CurrentUserService
     {

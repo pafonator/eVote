@@ -1,6 +1,6 @@
 using System.Net.Http;
 using System.Text.Json;
-using eVote.src.ClientSide;
+using eVote.src.Client;
 using eVote.src.Controller;
 using eVote.src.Model;
 using eVote.src.Model.DTO;

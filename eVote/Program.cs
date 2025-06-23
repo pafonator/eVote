@@ -7,7 +7,7 @@ using eVote.src.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using eVote.src.ClientSide;
+using eVote.src.Client;
 
 
 
