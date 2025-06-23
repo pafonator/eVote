@@ -10,6 +10,8 @@ using System.Text;
 using eVote.src.ClientSide;
 
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,10 +25,11 @@ builder.Services.AddTransient<ClientApiHandler>();
 
 
 // Http client for API requests (sends request to the adress)
+var baseAddress = builder.Configuration["eVoteAPI:BaseAddress"];
 builder.Services.AddHttpClient("eVoteAPI", client =>
 {
     //TODO fix base adress hardcoded
-    client.BaseAddress = new Uri("https://localhost:7152/"); // Adjust the base address as needed
+    client.BaseAddress = new Uri(baseAddress); // Adjust the base address as needed
 })
     .AddHttpMessageHandler<ClientApiHandler>();
 
