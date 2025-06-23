@@ -1,39 +1,16 @@
-﻿using eVote.src.Model;
+﻿using System.Collections.Concurrent;
+using eVote.src.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace eVote.src.Repository
 {
     public class DbUserActions
     {
-        private static readonly Dictionary<UserId, ReaderWriterLockSlim> _userLocks = new();
-        private static readonly ReaderWriterLockSlim _userLocksGuard = new();
+        private static readonly ConcurrentDictionary<UserId, ReaderWriterLockSlim> _userLocks = new();
 
         public static ReaderWriterLockSlim GetUserLock(UserId id)
         {
-            _userLocksGuard.EnterUpgradeableReadLock();
-            try
-            {
-                // Check if the lock for this user already exists
-                if (!_userLocks.TryGetValue(id, out var userLock))
-                {
-                    // If not, create a new lock
-                    _userLocksGuard.EnterWriteLock(); //TODO case when another thread is waiting for the lock
-                    try
-                    {
-                        userLock = new ReaderWriterLockSlim();
-                        _userLocks[id] = userLock;
-                    }
-                    finally
-                    {
-                        _userLocksGuard.ExitWriteLock();
-                    }
-                }
-                return userLock;
-            }
-            finally
-            {
-                _userLocksGuard.ExitUpgradeableReadLock();
-            }
+            return _userLocks.GetOrAdd(id, _ => new ReaderWriterLockSlim());
         }
 
         public static async Task<User?> Login(string email, string password)

@@ -28,7 +28,6 @@ builder.Services.AddTransient<ClientApiHandler>();
 var baseAddress = builder.Configuration["eVoteAPI:BaseAddress"];
 builder.Services.AddHttpClient("eVoteAPI", client =>
 {
-    //TODO fix base adress hardcoded
     client.BaseAddress = new Uri(baseAddress); // Adjust the base address as needed
 })
     .AddHttpMessageHandler<ClientApiHandler>();
