@@ -5,35 +5,93 @@
 }
 <h1>@ViewData["Title"]</h1>
 
-@if (Model.TableData == null)
+@if (Model.CurrentUser != null)
 {
-    <p>Loading...</p>
+    <label>
+        Currently logged in as: @Model.CurrentUser.Email
+    </label>
+
+    <label>
+		There are still @Model.RemainingVotes votes remaining to be attributed to a valid candidate.
+    </label>
 }
-else
-{
-    <table class="table table-bordered">
-        <thead>
+
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Votes Received</th>
+            <th>Is Candidate</th>
+            <th>Vote</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.TableData)
+        {
             <tr>
-                <th>User</th>
-                <th>Votes Received</th>
-                <th>Is Candidate</th>
-                <th>Vote</th>
+                <td>@user.Email</td>
+                <td>@user.VoteCount</td>
+                <td>
+					<!-- Candidate Status -->
+                    @{
+                        string text;
+                        string color = "inherit";
+
+                        if (user.IsCandidate)
+                        {
+                            text = "Yes";
+                        }
+                        else if (Model.CurrentUser != null && Model.UserCandidateVotes.Contains(user.Id))
+                        {
+                            text = "No longer a candidate";
+                            color = "red";
+                        }
+                        else
+                        {
+                            text = "No";
+                        }
+                    }
+                    <span style="color:@color">@text</span>
+                </td>
+                <td>
+                    <!-- Vote / UnVote buttons -->
+                    @{
+                        var currentUser = Model.CurrentUser;
+                        var candidate = user; // assuming 'user' is the candidate in this row
+                        var isCandidate = candidate.IsCandidate;
+                        var isLoggedIn = currentUser != null;
+                        var hasVotedForCandidate = isLoggedIn && Model.UserCandidateVotes.Contains(candidate.Id);
+                    }
+
+                    @if (isCandidate)
+                    {
+                        // Candidate: Show Vote/Unvote button
+                        <button type="submit"
+                                asp-page-handler="CandidateToggle"
+                                asp-route-id="@candidate.Id"
+                                style="flex: 1; background-color: @(hasVotedForCandidate ? "red" : "green");">
+                            @(hasVotedForCandidate ? "Unvote" : "Vote")
+                        </button>
+                    }
+                    else if (hasVotedForCandidate)
+                    {
+                        // Not a candidate but user has voted 
+                        <button type="submit"
+                                asp-page-handler="CandidateToggle"
+                                asp-route-id="@candidate.Id"
+                                style="flex: 1; background-color: red;">
+                            Unvote
+                        </button>
+                    }
+                    else
+                    {
+                        // Not a candidate and not voted
+                        <span>Not a candidate</span>
+                    }
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model.TableData)
-            {
-                <tr>
-                    <td>@user.Email</td>
-                    <td>@user.VoteCount</td>
-                    <td>@user.IsCandidate</td>
-                    <td>
-                        <input type="checkbox"
-                               disabled="@(!user.IsCandidate)"
-                               checked="" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+        }
+    </tbody>
+</table>

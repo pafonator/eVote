@@ -50,7 +50,7 @@ namespace eVote.src.Repository
         }
 
         
-        public static async Task<List<TableRow>> GetUsersWithVotesAsync()
+        public static async Task<List<UserVoteInfo>> GetUsersWithVotesAsync()
         {
             await using var db = EVoteDbContext.GetDb();
 
@@ -59,15 +59,60 @@ namespace eVote.src.Repository
                 .Select(g => new { CandidateId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(g => g.CandidateId, g => g.Count);
 
-            return await db.Users
-                .Select(u => new TableRow
+            return db.Users
+                .AsEnumerable()
+                .Select(u => new UserVoteInfo
                 {
                     Id = u.Id,
                     Email = u.Email,
                     IsCandidate = u.IsCandidate,
-                    VoteCount = voteCounts.ContainsKey(u.Id) ? voteCounts[u.Id] : 0
+                    VoteCount = voteCounts.TryGetValue(u.Id, out var count) ? count : 0
                 })
-                .ToListAsync();
+                .OrderByDescending(u => u.VoteCount)
+                .ToList();
         }
+
+        public static async Task<int> GetRemainingVotes()
+        {
+            await using var db = EVoteDbContext.GetDb();
+
+            // Count total registered non-candidate users
+            var totalVoters = await db.Users
+                .Where(u => !u.IsCandidate)
+                .CountAsync();
+            int maxVotes = totalVoters*2;
+
+            // Count nb votes of each user
+            var userVoteCounts = await db.Votes
+                .GroupBy(v => v.VoterId)
+                .Select(g => new { VoterId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(g => g.VoterId, g => g.Count);
+
+
+            // Count total votes that are valid
+            var validVotes = db.Votes
+                .Join(
+                    db.Users, // Join to get the voter
+                    vote => vote.VoterId,
+                    voter => voter.Id,
+                    (vote, voter) => new { Vote = vote, Voter = voter }
+                )
+                .Join(
+                    db.Users, // Join to get the candidate
+                    temp => temp.Vote.CandidateId,
+                    candidate => candidate.Id,
+                    (temp, candidate) => new { Vote = temp.Vote, Voter = temp.Voter, Candidate = candidate }
+                )
+                .Where(x => !x.Voter.IsCandidate)
+                .Where(x => x.Candidate.IsCandidate)
+                .AsEnumerable()
+                // Ignore votes from users with more than 2 votes (this should never happen)
+                .Where(x => (userVoteCounts.TryGetValue(x.Vote.VoterId, out int count) ? count : 0) <= 2)
+                .Count();
+
+            return maxVotes - validVotes;
+
+        }
+
     }
 }

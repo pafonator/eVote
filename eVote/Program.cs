@@ -7,7 +7,7 @@ using eVote.src.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using eVote.src.Controller;
+using eVote.src.Controller.ClientSide;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +28,7 @@ builder.Services.AddHttpClient("eVoteAPI", client =>
     client.BaseAddress = new Uri("https://localhost:7152/"); // Adjust the base address as needed
 })
     .AddHttpMessageHandler<ClientApiHandler>();
+
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor(); // For accessing HttpContext in Razor Pages
 

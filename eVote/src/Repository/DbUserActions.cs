@@ -76,6 +76,8 @@ namespace eVote.src.Repository
                 var user = await db.Users.FindAsync(userId);
                 if (user == null)
                     throw new InvalidOperationException("User not found.");
+                if (user.IsCandidate)
+                    throw new InvalidOperationException("User is already a candidate.");
 
                 user.IsCandidate = true;
                 await db.SaveChangesAsync();
@@ -96,6 +98,8 @@ namespace eVote.src.Repository
                 var user = await db.Users.FindAsync(userId);
                 if (user == null)
                     throw new InvalidOperationException("User not found.");
+                if (!user.IsCandidate)
+                    throw new InvalidOperationException("User is already not a candidate.");
 
                 user.IsCandidate = false;
 
@@ -109,7 +113,7 @@ namespace eVote.src.Repository
             }
         }
 
-        public static async Task VoteForCandidate(UserId userId ,UserId candidateId)
+        public static async Task AddVote(UserId userId ,UserId candidateId)
         {
             if (candidateId == userId)
             {
@@ -147,6 +151,38 @@ namespace eVote.src.Repository
                 {
                     throw new InvalidOperationException("A user cannot vote twice for the same person.");
                 }
+            }
+            finally
+            {
+                _candidateLock.ExitReadLock();
+                _currentUserLock.ExitWriteLock();
+            }
+        }
+
+        public static async Task RemoveVote(UserId userId, UserId candidateId)
+        {
+            if (candidateId == userId)
+            {
+                throw new InvalidOperationException("The candidate and voter are the same person");
+            }
+
+            var _currentUserLock = GetUserLock(userId);
+            var _candidateLock = GetUserLock(candidateId);
+
+            _currentUserLock.EnterWriteLock();
+            _candidateLock.EnterReadLock();
+            try
+            {
+                await using var db = EVoteDbContext.GetDb();
+
+                var vote = await db.Votes.FindAsync(new { VoterId = userId, CandidateId = candidateId });
+                if (vote == null)
+                {
+                    throw new InvalidOperationException("No vote found for this user and candidate.");
+                }
+
+                db.Votes.Remove(vote);
+                await db.SaveChangesAsync();
             }
             finally
             {

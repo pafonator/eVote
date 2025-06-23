@@ -26,12 +26,10 @@ namespace eVote.Pages
 
         [BindProperty]
         public string Password { get; set; }
-
-        public string CurrentUser { get; set; }
         public string ErrorMessage { get; set; }
 
-        public void OnGet() { 
-            //User.Identity.Id
+        public void OnGet() {
+
         }
 
         public async Task<IActionResult> OnPostLoginAsync(string action)
@@ -86,18 +84,6 @@ namespace eVote.Pages
                 ErrorMessage = message;
                 _logger.LogError($"Registration failed: {message}");
             }
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostLogoutAsync(string action)
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostTestAsync(string action)
-        {
-            var response = await _httpClient.GetAsync("api/evote/user/test");
             return Page();
         }
     }

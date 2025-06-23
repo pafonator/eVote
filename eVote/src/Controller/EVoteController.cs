@@ -22,34 +22,33 @@ namespace eVote.src.Controller
             _jwtService = jwtService;
         }
 
-
-        [HttpGet("test")]
-        public IActionResult Test()
-        {
-            return Ok("Hello from the API");
-        }
-
         [HttpGet("table")]
-        public async Task<List<TableRow>> GetUsersWithVotesAsync()
+        public async Task<IActionResult> GetUsersWithVotesAsync()
         {
-            await using var db = EVoteDbContext.GetDb();
-
-            var voteCounts = await db.Votes
-                .GroupBy(v => v.CandidateId)
-                .Select(g => new { CandidateId = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(g => g.CandidateId, g => g.Count);
-
-            return await db.Users
-                .Select(u => new TableRow
-                {
-                    Id = u.Id,
-                    Email = u.Email,
-                    IsCandidate = u.IsCandidate,
-                    VoteCount = voteCounts.ContainsKey(u.Id) ? voteCounts[u.Id] : 0
-                })
-                .ToListAsync();
+            var table = await DbRead.GetUsersWithVotesAsync();
+            return Ok(table);
         }
 
+        [HttpGet("remainingVotes")]
+        public async Task<IActionResult> GetRemainingVotesAsync()
+        {
+            var votes = await DbRead.GetRemainingVotes();
+            return Ok(votes);
+        }
+
+        [HttpGet("user/info")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            UserId userId = UserId.Parse(User.FindFirst("Id")?.Value);
+            var user = await DbRead.GetUserAsync(userId);
+            return Ok(new UserInfo
+            {
+                Email = user?.Email ?? "",
+                Id = user?.Id ?? UserId.Empty,
+                IsCandidate = user?.IsCandidate ?? false
+            });
+        }
 
         [HttpPost("user/register")]
         public async Task<IActionResult> Register([FromBody] UserCredentials content)
@@ -99,16 +98,68 @@ namespace eVote.src.Controller
             }
         }
 
-        [HttpGet("user/test")]
+        [HttpPost("user/becomeCandidate")]
         [Authorize]
-        public IActionResult GetCurrentUser()
+        public async Task<IActionResult> BecomeCandidate()
         {
-            var userId = User.FindFirst("Id")?.Value;
-            var email = User.FindFirst("Email")?.Value;
+            try
+            {
+                UserId userId = UserId.Parse(User.FindFirst("Id")?.Value);
+                await DbUserActions.RegisterAsCandidate(userId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
 
-            Console.WriteLine($"Current User: {userId}, Email: {email}");
+        [HttpPost("user/unbecomeCandidate")]
+        [Authorize]
+        public async Task<IActionResult> UnbecomeCandidate()
+        {
+            try
+            {
+                UserId userId = UserId.Parse(User.FindFirst("Id")?.Value);
+                await DbUserActions.UnregisterAsCandidate(userId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
 
-            return Ok();
+        [HttpPost("user/addVote")]
+        [Authorize]
+        public async Task<IActionResult> AddVote([FromBody] UserId candidateId)
+        {
+            try
+            {
+                UserId userId = UserId.Parse(User.FindFirst("Id")?.Value);
+                await DbUserActions.AddVote(userId, candidateId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpPost("user/removeVote")]
+        [Authorize]
+        public async Task<IActionResult> RemoveVote([FromBody] UserId candidateId)
+        {
+            try
+            {
+                UserId userId = UserId.Parse(User.FindFirst("Id")?.Value);
+                await DbUserActions.RemoveVote(userId, candidateId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
     }
