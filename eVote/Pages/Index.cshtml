@@ -67,22 +67,30 @@
 
                     @if (isCandidate)
                     {
-                        // Candidate: Show Vote/Unvote button
-                        <button type="submit"
-                                asp-page-handler="CandidateToggle"
-                                asp-route-id="@candidate.Id"
-                                style="flex: 1; background-color: @(hasVotedForCandidate ? "red" : "green");">
-                            @(hasVotedForCandidate ? "Unvote" : "Vote")
-                        </button>
+                        if (hasVotedForCandidate){
+                            <button type="submit"
+                                    asp-page-handler="VoteFor"
+                                    asp-route-id="@candidate.Id"
+                                    style="flex: 1; background-color: red;">
+                                Remove Vote
+                            </button>
+                        }else{
+                            <button type="submit"
+                                    asp-page-handler="RemoveVote"
+                                    asp-route-id="@candidate.Id"
+                                    style="flex: 1; background-color: greenyellow);">
+                                Add Vote
+                            </button>
+                        }
                     }
                     else if (hasVotedForCandidate)
                     {
-                        // Not a candidate but user has voted 
+                        // Not a candidate but user has voted so he can remove vote
                         <button type="submit"
-                                asp-page-handler="CandidateToggle"
+                                asp-page-handler="RemoveVote"
                                 asp-route-id="@candidate.Id"
                                 style="flex: 1; background-color: red;">
-                            Unvote
+                            Remove Vote
                         </button>
                     }
                     else

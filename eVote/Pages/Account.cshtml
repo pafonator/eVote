@@ -14,8 +14,8 @@
     <form method="post">
        <input type="hidden" asp-for="IsCandidate" />
        <button type="submit"  
-            asp-page-handler="CandidateToggle"  
-               style="flex: 1; background-color: @(Model.IsCandidate ? "red" : "green");">
+            asp-page-handler="CandidateToggle"
+                style="flex: 1; background-color: @(Model.IsCandidate ? "red" : "greenyellow");">
             @(Model.IsCandidate ? "Drop from Election" : "Become Candidate")
         </button>
         <button type="submit"

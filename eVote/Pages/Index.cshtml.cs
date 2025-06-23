@@ -71,6 +71,15 @@ namespace eVote.Pages
             }
         }
 
+        /*
+        public async Task<IActionResult> OnPostVoteForAsync(Guid id)
+        {
+            var response = await _httpClient.PostAsync("api/evote/user/addVote", new);
+        }
 
+        public async Task<IActionResult> OnPostRemoveVoteAsync(Guid id)
+        {
+            var response = await _httpClient.PostAsync("api/evote/user/removeVote", new {});
+        }*/
     }
 }
