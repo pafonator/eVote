@@ -116,54 +116,54 @@ public class DatabaseTests
     }
 
     [Fact]
-    public void RegisterLoginTest()
+    public async Task RegisterLoginTest()
     {
-        var ex = Assert.Throws<InvalidOperationException>(() => DbUserActions.Login("John@gmail.com", "1"));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => DbUserActions.Login("John@gmail.com", "1"));
         Assert.Equal("User does not exist", ex.Message);
 
-        DbUserActions dbUser = DbUserActions.RegisterUser("John@gmail.com", "1");
+        User? dbUser = DbUserActions.RegisterUser("John@gmail.com", "1").Result;
         Assert.NotNull(dbUser);
 
-        Assert.Throws<InvalidOperationException>(() => DbUserActions.RegisterUser("John@gmail.com", "1"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => DbUserActions.RegisterUser("John@gmail.com", "1"));
 
-        ex = Assert.Throws<InvalidOperationException>(() => DbUserActions.Login("John@gmail.com", "WrongPassword"));
+        ex = await Assert.ThrowsAsync<InvalidOperationException>(() => DbUserActions.Login("John@gmail.com", "WrongPassword"));
         Assert.Equal("Incorrect password", ex.Message);
 
-        dbUser = DbUserActions.Login("John@gmail.com", "1");
+        dbUser = DbUserActions.Login("John@gmail.com", "1").Result;
         Assert.NotNull(dbUser);
     }
 
     [Fact]
     public async Task CandidateVoteTest()
     {
-        DbUserActions dbUserKale = DbUserActions.RegisterUser("Kale@gmail.com", "1");
-        DbUserActions dbUserAmi = DbUserActions.RegisterUser("Ami@gmail.com", "1");
-        DbUserActions dbUserBob = DbUserActions.RegisterUser("Bob@gmail.com", "1");
-        DbUserActions dbUserCal = DbUserActions.RegisterUser("Cal@gmail.com", "1");
+        User? dbUserKale = DbUserActions.RegisterUser("Kale@gmail.com", "1").Result;
+        User? dbUserAmi = DbUserActions.RegisterUser("Ami@gmail.com", "1").Result;
+        User? dbUserBob = DbUserActions.RegisterUser("Bob@gmail.com", "1").Result;
+        User? dbUserCal = DbUserActions.RegisterUser("Cal@gmail.com", "1").Result;
         Assert.NotNull(dbUserKale);
         Assert.NotNull(dbUserAmi);
         Assert.NotNull(dbUserBob);
         Assert.NotNull(dbUserCal);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dbUserKale.VoteForCandidate(dbUserKale.userId));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dbUserKale.VoteForCandidate(dbUserAmi.userId));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => DbUserActions.AddVote(dbUserKale.Id, dbUserKale.Id));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => DbUserActions.AddVote(dbUserKale.Id, dbUserAmi.Id));
 
-        await dbUserAmi.RegisterAsCandidate();
-        await dbUserBob.RegisterAsCandidate();
-        await dbUserCal.RegisterAsCandidate();
+        await DbUserActions.RegisterAsCandidate(dbUserAmi.Id);
+        await DbUserActions.RegisterAsCandidate(dbUserBob.Id);
+        await DbUserActions.RegisterAsCandidate(dbUserCal.Id);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dbUserAmi.VoteForCandidate(dbUserAmi.userId));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => DbUserActions.AddVote(dbUserAmi.Id, dbUserAmi.Id));
 
-        await dbUserKale.VoteForCandidate(dbUserAmi.userId);
+        await DbUserActions.AddVote(dbUserKale.Id, dbUserAmi.Id);
 
         // Cannot vote twice for the same candidate
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dbUserKale.VoteForCandidate(dbUserAmi.userId));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => DbUserActions.AddVote(dbUserKale.Id, dbUserAmi.Id));
         // Cannot vote more than twice
-        await dbUserKale.VoteForCandidate(dbUserBob.userId);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => dbUserKale.VoteForCandidate(dbUserCal.userId));
+        await DbUserActions.AddVote(dbUserKale.Id, dbUserBob.Id);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => DbUserActions.AddVote(dbUserKale.Id, dbUserCal.Id));
 
-        await dbUserAmi.UnregisterAsCandidate();
-        await dbUserBob.UnregisterAsCandidate();
-        await dbUserCal.UnregisterAsCandidate();
+        await DbUserActions.UnregisterAsCandidate(dbUserAmi.Id);
+        await DbUserActions.UnregisterAsCandidate(dbUserBob.Id);
+        await DbUserActions.UnregisterAsCandidate(dbUserCal.Id);
     }
 }
