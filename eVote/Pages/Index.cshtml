@@ -51,7 +51,10 @@
                         {
                             text = "Yes";
                         }
-                        else if (Model.CurrentUser != null && Model.UserCandidateVotes.Contains(candidate.Id))
+                        else if (Model.CurrentUser != null && 
+                            Model.UserCandidateVotes.Contains(candidate.Id) &&
+						    Model.CurrentUser.IsCandidate == false
+                        )
                         {
                             text = "No longer a candidate";
                             color = "red";

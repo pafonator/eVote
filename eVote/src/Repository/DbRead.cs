@@ -55,7 +55,14 @@ namespace eVote.src.Repository
             await using var db = EVoteDbContext.GetDb();
 
             var voteCounts = await db.Votes
-                .GroupBy(v => v.CandidateId)
+                .Join(
+                    db.Users, // Join to get the voter
+                    vote => vote.VoterId,
+                    voter => voter.Id,
+                    (vote, voter) => new { Vote = vote, Voter = voter }
+                )
+                .Where(x => !x.Voter.IsCandidate) // Only consider votes from non-candidates
+                .GroupBy(v => v.Vote.CandidateId)
                 .Select(g => new { CandidateId = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(g => g.CandidateId, g => g.Count);
 

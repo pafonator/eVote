@@ -21,7 +21,7 @@ public class EVoteControllerTests
 
     public EVoteControllerTests()
     {
-        _jwtServiceMock = new JwtToken();
+        _jwtServiceMock = new JwtToken("SECRET_KEY");
         _controller = new EVoteController(_jwtServiceMock);
 
         // Ensure an empty database is created before each test
