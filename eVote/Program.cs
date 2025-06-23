@@ -18,6 +18,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 // Register the DbContext
+var connection = builder.Configuration["ConnectionStrings:DefaultConnection"];
+//TODO use the connection string from the configuration
 builder.Services.AddDbContext<EVoteDbContext>();
 
 // Used to handle authentication for all API requests

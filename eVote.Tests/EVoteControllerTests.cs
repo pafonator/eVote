@@ -11,8 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace eVote.Tests;
-
 public class EVoteControllerTests
 {
     public DbContextOptions<EVoteDbContext> Options { get; }
