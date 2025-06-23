@@ -32,7 +32,7 @@ namespace eVote.src.Repository
         {
             await using var db = EVoteDbContext.GetDb();
             return await db.Users
-                .FirstOrDefaultAsync(u => u.Id == userId); //TODO
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public static async Task<List<User>> GetAllUsersAsync()

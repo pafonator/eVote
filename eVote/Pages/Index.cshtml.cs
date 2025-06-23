@@ -90,39 +90,29 @@ namespace eVote.Pages
         
         public async Task<IActionResult> OnPostVoteForAsync(UserId id)
         {
-            Console.WriteLine($"Vote for {id}");
             var input = JsonContent.Create(id);
             var response = await _httpClient.PostAsync("api/evote/user/addVote", input);
-            if (response.IsSuccessStatusCode)
-            {
-                await Update();
-                return Page();
-            }
-            else
+            if (!response.IsSuccessStatusCode)
             {
                 string message = await response.Content.ReadAsStringAsync();
                 _logger.LogError($"Vote failed: {message}");
                 ErrorMessage = message; // Set error message to display in the UI
             }
+            await Update();
             return Page();
         }
         
         public async Task<IActionResult> OnPostRemoveVoteAsync(Guid id)
         {
-            Console.WriteLine($"RemVote for {id}");
             var input = JsonContent.Create(id);
             var response = await _httpClient.PostAsync("api/evote/user/removeVote", input);
-            if (response.IsSuccessStatusCode)
-            {
-                await Update();
-                return Page();
-            }
-            else
+            if (!response.IsSuccessStatusCode)
             {
                 string message = await response.Content.ReadAsStringAsync();
                 _logger.LogError($"Remove vote failed: {message}");
                 ErrorMessage = message; // Set error message to display in the UI
             }
+            await Update();
             return Page();
         }
     }

@@ -38,7 +38,9 @@
         {
             <tr>
                 <td>@candidate.Email</td>
-                <td>@candidate.VoteCount</td>
+                <td>
+                    <span style="color:@((!candidate.IsCandidate && candidate.VoteCount>0) ? "red" : "inherit")">@candidate.VoteCount</span>
+                </td>
                 <td>
 					<!-- Candidate Status -->
                     @{
@@ -94,7 +96,7 @@
                                     <button type="submit"
                                             asp-page-handler="VoteFor"
                                             asp-route-id="@candidate.Id"
-                                            style="flex: 1; background-color: greenyellow);">
+                                            style="flex: 1; background-color: greenyellow;">
                                         Add Vote
                                     </button>
                                 }

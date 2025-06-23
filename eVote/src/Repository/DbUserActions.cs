@@ -104,7 +104,6 @@ namespace eVote.src.Repository
                 user.IsCandidate = false;
 
                 // TODO: Inform all voters of this candidate that this candidate is no longer valid
-
                 await db.SaveChangesAsync();
             }
             finally
