@@ -52,37 +52,28 @@ namespace eVote.Pages
 
         public async Task FillTable()
         {
-            var response = await _httpClient.GetAsync("api/evote/table");
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var json = await response.Content.ReadAsStringAsync();
-                TableData = JsonSerializer.Deserialize<List<UserVoteInfo>>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                }) ?? new List<UserVoteInfo>();
+                var table = await _httpClient.GetFromJsonAsync<List<UserVoteInfo>>("api/evote/table");
+                TableData = table;
             }
-            else
+            catch (HttpRequestException ex)
             {
-                string message = await response.Content.ReadAsStringAsync();
-                _logger.LogError($"Failed to fetch table data: {message}");
+                _logger.LogError($"Failed to fetch table data: {ex.Message}");
                 TableData = new List<UserVoteInfo>(); // Ensure we have an empty list on failure
             }
         }
 
         public async Task GetNbRemainingVotes()
         {
-            var response = await _httpClient.GetAsync("api/evote/remainingVotes");
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var json = await response.Content.ReadAsStringAsync();
-                RemainingVotes = JsonSerializer.Deserialize<int>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var count = await _httpClient.GetFromJsonAsync<int>("api/evote/remainingVotes");
+                RemainingVotes = count;
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogError($"Failed to get remaining votes data");
+                _logger.LogError($"Failed to get remaining votes data : {ex.Message}");
                 RemainingVotes = 0; // Default to 0 on failure
             }
         }
@@ -90,8 +81,7 @@ namespace eVote.Pages
         
         public async Task<IActionResult> OnPostVoteForAsync(UserId id)
         {
-            var input = JsonContent.Create(id);
-            var response = await _httpClient.PostAsync("api/evote/user/addVote", input);
+            var response = await _httpClient.PostAsJsonAsync("api/evote/user/addVote", id);
             if (!response.IsSuccessStatusCode)
             {
                 string message = await response.Content.ReadAsStringAsync();
@@ -104,8 +94,7 @@ namespace eVote.Pages
         
         public async Task<IActionResult> OnPostRemoveVoteAsync(Guid id)
         {
-            var input = JsonContent.Create(id);
-            var response = await _httpClient.PostAsync("api/evote/user/removeVote", input);
+            var response = await _httpClient.PostAsJsonAsync("api/evote/user/removeVote", id);
             if (!response.IsSuccessStatusCode)
             {
                 string message = await response.Content.ReadAsStringAsync();

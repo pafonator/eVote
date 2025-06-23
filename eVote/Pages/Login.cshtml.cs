@@ -34,8 +34,8 @@ namespace eVote.Pages
 
         public async Task<IActionResult> OnPostLoginAsync(string action)
         {
-            var input = JsonContent.Create(new UserCredentials { Email = Email, Password = Password });
-            var response = await _httpClient.PostAsync("api/evote/user/login", input);
+            var response = await _httpClient.PostAsJsonAsync("api/evote/user/login", 
+                new UserCredentials { Email = Email, Password = Password });
             if (response.IsSuccessStatusCode)
             {
                 var tokenData = await response.Content.ReadFromJsonAsync<TokenAuthentication>();
@@ -61,8 +61,8 @@ namespace eVote.Pages
         }
         public async Task<IActionResult> OnPostRegisterAsync(string action)
         {
-            var input = JsonContent.Create(new UserCredentials{ Email = Email, Password = Password});
-            var response = await _httpClient.PostAsync("api/evote/user/register", input);
+            var response = await _httpClient.PostAsJsonAsync("api/evote/user/register",
+                new UserCredentials { Email = Email, Password = Password });
             if (response.IsSuccessStatusCode)
             {
                 var tokenData = await response.Content.ReadFromJsonAsync<TokenAuthentication>();

@@ -4,6 +4,7 @@ using eVote.src.Repository;
 
 namespace eVote.src.Service
 {
+    // UNUSED TODO REMOVE
     public class VoteVerificationSystem
     {
         public Dictionary<UserId, int> CountAllCandidateVotes()
