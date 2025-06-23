@@ -1,83 +1,136 @@
-# eVote Web Application
+# 🗳️ eVote Web Application
 
-This project is a web application called **eVote** that allows users to register and vote for candidates, following the rules and requirements below.
+**eVote** is a monolithic ASP.NET web application that enables users to register and vote for candidates, respecting specific rules and restrictions around voting behavior.
 
-## Basic Functionalities
+---
 
-- [ ] **User Registration**
-    - [ ] Users can register by providing an email address and a password.
-    - [ ] Once registered, users can log in to the application.
+## 🚀 Basic Functionalities
 
-- [ ] **Account**
-    - [ ] Users can become candidates or drop out of the candidate list.
-    - [ ] If a user is a candidate, they cannot vote for anyone.
+### ✅ User Registration
+- Users can register with an email and password.
+- Registered users can log in.
 
-- [ ] **Voting List**
-    - [ ] Anyone can view the voting list.
-    - [ ] The list shows how many valid votes are still possible for all users
-    - [ ] The voting list contains shows the number of votes each user has received.
-    - [ ] The user list is sorted in descending order by the number of votes.
-    - [ ] Users can see who they voted for
+### 👤 Account Management
+- Users can become candidates or drop out.
+- Candidates cannot vote.
 
-- [ ] **Voting Rules**
-    - [ ] Candidates cannot vote for anyone.
-    - [ ] Users must be logged in to vote.
-    - [ ] Users can only vote once per candidate.
-    - [ ] Users can vote for a maximum of two candidates.
-    - [ ] Users can change their votes at any time.
-    - [ ] When a user becomes a candidate, they keep their previous votes but are no longer counted as valid votes.
-    - [ ] When a user drops out of the candidate list, their candidate votes will still appear for reference but are not counted as valid votes.
+### 🗂️ Voting List
+- Publicly accessible.
+- Shows how many **valid votes** remain for each user.
+- Displays vote count per user.
+- Sorted in descending order by number of votes.
+- Shows who each user voted for.
 
-## About the Application
+### 🧾 Voting Rules
+- Candidates cannot vote.
+- Users must be logged in to vote.
+- Max **2 votes per user** (1 per candidate).
+- Users can change votes at any time.
+- Becoming a candidate keeps previous votes (now invalid).
+- Leaving candidacy does not restore past votes’ validity.
 
-This is a web application done in only 4 days in ASP.NET, due to this fact, it is still in its early stages of development with a very limited set of features, test coverage, and documentation. You might still find some bugs, notes (//TODO), and unused classes left in the code by the developer for future reference, they were left intentionally for the sake of completeness. It is not as structured or organized as a project with proper setup, linting, and testing, and doesn't fully represent my developing style and how I would work in an actual team, but it is a starting reference to understand how I think when coding.
+---
 
-### Server/Client Security idea
+## ⚙️ About This Project
 
-Although the application is monolithic, an effort was made to try separate what would be client and server for security. A browser cookie is used to store the user's authentication token, and the token is sent with every request to the server, the server validates the token and returns the user's information if the token is valid, this is done to prevent unauthorized access to the server.
+This is a prototype built in just **4 days**, so it is still in an early stage with limited features, test coverage, and structure. Some `//TODO` comments, unused classes, and failing tests have been intentionally left for future development.
 
-### Database
+While this doesn’t reflect production-level standards, it demonstrates how I structure logic and think during fast-paced development.
 
-The application uses SQLite as the database, and the database is created and managed by the application, it is located at "eVote/eVote.db" and already contains some data.
+---
 
-Currently all users are letters, and the password is the given letter repeated four times, for example Email: "a" Password: "aaaa", this is to make it easier to test the application, you can access any user by using the email and password.
+## 🔒 Server/Client Security Model
 
-### API 
+Even though the app is monolithic, it mimics a client-server architecture:
 
-The applications uses an API, the controller is located at "eVote/Controllers/ApiController.cs" and is used to handle the requests from the client (front-end), saddly no swagger documentation is available for the API.
+- Authentication token is stored in a **cookie**.
+- The token is sent with every API request.
+- The server validates the token and returns user info.
 
-## Posible issues
+This setup helps separate client logic from server validation, improving modularity and security.
 
-Due to the limited time and lack of experience in certain areas, especially in the Front-End, and server-side development, there might be some problems with the application, such as:
+---
 
-- The application currently runs in "https://localhost:7152/" , the port number is set in appsettings.json and in launchSettings.json you can change it to any other port you want in case there are any conflicts (I wasn't able to find a simple way to dynamically find a port and wire it to the application).
+## 🛢️ Database
 
-- The application uses Cookies for authentication, make sure your browser allows them
+- The app uses **SQLite** (`eVote/eVote.db`) — auto-created and pre-populated.
+- All users are **single-letter emails** with repeating-letter passwords:
 
-- The test coverage is not complete, and there are some tests that fail, I decided to leave them in the code for future reference, but they are not maintained, priority was given to the development of the application than to the tests.
+| Email | Password |
+|-------|----------|
+| `a`   | `aaaa`   |
+| `b`   | `bbbb`   |
+| `c`   | `cccc`   |
+| ...   | ...      |
 
-- Since the application is monolithic, security is weak, although password checking was implemented, this would assume that the client doesn t have access to the server, which is not the case. Since security is an additional feature, it is not very important.
+This makes testing easier and faster.
 
-## Requirements
+---
 
-To run the application, you will need to run Visual Studio 2022 with the following dependencies:
+## 📡 API
 
-### 📦 Dependencies
+- The backend API controller is located at:  
+  `eVote/Controllers/ApiController.cs`
+- Used by the client-side (Razor Pages) to perform authenticated operations.
+- **Note:** No Swagger/OpenAPI documentation yet.
 
-This project relies on the following NuGet packages:
+---
+
+## ⚠️ Known Issues & Limitations
+
+- **Port Binding:**  
+  App runs by default on `https://localhost:7152/`.  
+  Ports are set in both `launchSettings.json` and `appsettings.json`.  
+  You may need to update them manually if port conflicts arise.
+
+- **Cookies:**  
+  Make sure cookies are enabled in your browser. The app relies on them for authentication.
+
+- **Testing:**  
+  Some tests are incomplete or failing. These were left for future iterations and learning purposes. Priority was given to the development of the application than to the tests
+
+- **Security:**  
+  Password validation exists, but since the app is monolithic, **security is weak**. Client and server logic are not truly isolated, so assume limited protection.
+
+---
+
+## 🧩 Requirements
+
+To run this project, you’ll need:
+
+- **Visual Studio 2022** (or later)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+
+---
+
+## 📦 Dependencies
+
+This project uses the following NuGet packages:
 
 | Package                                           | Version  | Description                                                                 |
 |--------------------------------------------------|----------|-----------------------------------------------------------------------------|
-| `Microsoft.AspNetCore.Authentication.JwtBearer`  | 8.0.17   | Adds support for authenticating JWT tokens in ASP.NET Core applications.   |
-| `Microsoft.EntityFrameworkCore`                  | 9.0.6    | Core package for using EF Core for data access.                            |
-| `Microsoft.EntityFrameworkCore.Design`           | 9.0.6    | Design-time tools for EF Core (used for migrations, scaffolding, etc.).    |
-| `Microsoft.EntityFrameworkCore.Sqlite`           | 9.0.6    | EF Core provider for SQLite.                                               |
-| `Microsoft.EntityFrameworkCore.SqlServer`        | 9.0.6    | EF Core provider for SQL Server.                                           |
-| `System.IdentityModel.Tokens.Jwt`                | 8.12.1   | Library for creating and validating JWT tokens.                            |
+| `Microsoft.AspNetCore.Authentication.JwtBearer`  | 8.0.17   | Enables JWT authentication for ASP.NET Core.                               |
+| `Microsoft.EntityFrameworkCore`                  | 9.0.6    | Core ORM framework for .NET.                                                |
+| `Microsoft.EntityFrameworkCore.Design`           | 9.0.6    | Design-time EF Core tools.                                                  |
+| `Microsoft.EntityFrameworkCore.Sqlite`           | 9.0.6    | SQLite database provider.                                                   |
+| `Microsoft.EntityFrameworkCore.SqlServer`        | 9.0.6    | SQL Server database provider (optional).                                    |
+| `System.IdentityModel.Tokens.Jwt`                | 8.12.1   | Utilities for generating and validating JWT tokens.                         |
 
-> Target framework: **.NET 8.0**
+---
 
-## Quick Start
+## 🏁 Quick Start
 
-To run the application launch it like you normally would in a C# .NET application, open the project in Visual Studio and use the top buttons to Run in Debug or Normal mode. You can use the following command: `dotnet run --launch-profile "https"`
+To run the application launch it like you normally would in a C# .NET application :
 
+From Visual Studio:
+1. Open the solution in Visual Studio.
+2. Click **Start** or press `F5` to run.
+
+
+Alternatively, you can run the application from the command line:
+1. Go to the eVote project directory (where this README file is located).
+2. Run the following command:
+
+```bash
+dotnet run --launch-profile "https"
+```
