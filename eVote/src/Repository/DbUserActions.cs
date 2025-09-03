@@ -89,19 +89,17 @@ namespace eVote.src.Repository
             }
         }
 
-        public static async Task AddVote(UserId userId ,UserId candidateId)
+        public static async Task AddVote(UserId userId, UserId candidateId)
         {
             if (candidateId == userId)
-            {
                 throw new InvalidOperationException("Really... You just voted for yourself (-_-)");
-            }
 
-            var _currentUserLock = GetUserLock(userId);
-            var _candidateLock = GetUserLock(candidateId);
+            var userLock = GetUserLock(userId);
+            var candidateLock = GetUserLock(candidateId);
 
-            _currentUserLock.EnterWriteLock();
-            _candidateLock.EnterReadLock();
-            try
+            using (MultiLock.Acquire( // two locks → use MultiLock
+                (userLock, LockMode.Write),
+                (candidateLock, LockMode.Read)))
             {
                 await using var db = EVoteDbContext.GetDb();
 
@@ -128,42 +126,28 @@ namespace eVote.src.Repository
                     throw new InvalidOperationException("A user cannot vote twice for the same person.");
                 }
             }
-            finally
-            {
-                _candidateLock.ExitReadLock();
-                _currentUserLock.ExitWriteLock();
-            }
         }
 
         public static async Task RemoveVote(UserId userId, UserId candidateId)
         {
             if (candidateId == userId)
-            {
                 throw new InvalidOperationException("The candidate and voter are the same person");
-            }
 
-            var _currentUserLock = GetUserLock(userId);
-            var _candidateLock = GetUserLock(candidateId);
+            var userLock = GetUserLock(userId);
+            var candidateLock = GetUserLock(candidateId);
 
-            _currentUserLock.EnterWriteLock();
-            _candidateLock.EnterReadLock();
-            try
+            using (MultiLock.Acquire( // two locks → use MultiLock
+                (userLock, LockMode.Write),
+                (candidateLock, LockMode.Read)))
             {
                 await using var db = EVoteDbContext.GetDb();
 
-                var vote = await db.Votes.FirstAsync(v => v.VoterId == userId && v.CandidateId == candidateId);
+                var vote = await db.Votes.FirstOrDefaultAsync(v => v.VoterId == userId && v.CandidateId == candidateId);
                 if (vote == null)
-                {
                     throw new InvalidOperationException("No vote found for this user and candidate.");
-                }
 
                 db.Votes.Remove(vote);
                 await db.SaveChangesAsync();
-            }
-            finally
-            {
-                _candidateLock.ExitReadLock();
-                _currentUserLock.ExitWriteLock();
             }
         }
     }
