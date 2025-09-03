@@ -1,0 +1,34 @@
+﻿@page
+@model AccountModel
+@{
+    ViewData["Title"] = "Account";
+}
+<h2>Account</h2>
+
+
+<div style="display: flex; flex-direction: column; max-width: 300px;">
+    <label>
+        Currently logged in as: @Model.CurrentUserEmail
+    </label>
+
+    <form method="post">
+       <input type="hidden" asp-for="IsCandidate" />
+       <button type="submit"  
+            asp-page-handler="CandidateToggle"
+                style="flex: 1; background-color: @(Model.IsCandidate ? "red" : "greenyellow");">
+            @(Model.IsCandidate ? "Drop from Election" : "Become Candidate")
+        </button>
+        <button type="submit"
+                asp-page-handler="Logout"
+                style="flex: 1;">
+            Logout
+        </button>
+    </form>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p style="color:red">@Model.ErrorMessage</p>
+}
+
+

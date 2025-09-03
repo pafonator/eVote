@@ -1,10 +1,128 @@
 ﻿@page
-@model IndexModel
+@model Index
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Home";
+}
+<h1>@ViewData["Title"]</h1>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <p style="color:red">@Model.ErrorMessage</p>
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@if (Model.CurrentUser != null)
+{
+    <div>
+        <label>
+            Currently logged in as: @Model.CurrentUser.Email
+        </label>
+    </div>
+}
+
+<div>
+    <label>
+        There are still @Model.RemainingVotes votes remaining to be attributed to a valid candidate.
+    </label>
 </div>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Votes Received</th>
+            <th>Is Candidate</th>
+            <th>Vote</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var candidate in Model.TableData)
+        {
+            <tr>
+                <td>@candidate.Email</td>
+                <td>
+                    <span style="color:@((!candidate.IsCandidate && candidate.VoteCount>0) ? "red" : "inherit")">@candidate.VoteCount</span>
+                </td>
+                <td>
+					<!-- Candidate Status -->
+                    @{
+                        string text;
+                        string color = "inherit";
+
+                        if (candidate.IsCandidate)
+                        {
+                            text = "Yes";
+                        }
+                        else if (Model.CurrentUser != null && 
+                            Model.UserCandidateVotes.Contains(candidate.Id) &&
+						    Model.CurrentUser.IsCandidate == false
+                        )
+                        {
+                            text = "No longer a candidate";
+                            color = "red";
+                        }
+                        else
+                        {
+                            text = "No";
+                        }
+                    }
+                    <span style="color:@color">@text</span>
+                </td>
+                <td>
+                    <!-- Vote / UnVote buttons -->
+                    @{
+                        var currentUser = Model.CurrentUser;
+                        var hasVotedForCandidate = Model.UserCandidateVotes.Contains((UserId)candidate.Id);
+                    }
+                    <form method="post">
+                        @if (currentUser == null)
+					    {
+						    <span style="color: red;">You must be logged in to vote.</span>
+					    }
+					    else if (currentUser.IsCandidate)
+					    {
+                            <span style="color: red;">You can't vote as a candidate'</span>
+                        }
+                        else
+                        {
+                            if (candidate.IsCandidate)
+                            {
+                                if (hasVotedForCandidate)
+                                {
+                                    <button type="submit"
+                                            asp-page-handler="RemoveVote"
+                                            asp-route-id="@candidate.Id"
+                                            style="flex: 1; background-color: red;">
+                                        Remove Vote
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit"
+                                            asp-page-handler="VoteFor"
+                                            asp-route-id="@candidate.Id"
+                                            style="flex: 1; background-color: greenyellow;">
+                                        Add Vote
+                                    </button>
+                                }
+                            }
+                            else if (hasVotedForCandidate)
+                            {
+                                // Not a candidate but user has voted so he can remove vote
+                                <button type="submit"
+                                        asp-page-handler="RemoveVote"
+                                        asp-route-id="@candidate.Id"
+                                        style="flex: 1; background-color: red;">
+                                    Remove Vote
+                                </button>
+                            }
+                            else
+                            {
+                                // Not a candidate and not voted
+                                <span>Not a candidate</span>
+                            }
+					    }
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
